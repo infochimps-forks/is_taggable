@@ -37,9 +37,25 @@ module IsTaggable
         has_many   :tags,     :through => :taggings
         after_save :save_tags
 
+        named_scope :with_tag,  lambda{|tag, *kind| kind = kind.first
+          { :include => :tags, :conditions => {:tags => conditions_from_tag_and_kind(tag, kind)} }
+        }
+
         tag_kinds.each do |k|
           define_method("#{k}_list")  { get_tag_list(k) }
           define_method("#{k}_list=") { |new_list| set_tag_list(k, new_list) }
+        end
+
+        protected
+        def conditions_from_tag_and_kind tag, kind=nil
+          conds = {}
+          case tag
+          when Tag    then conds.merge! :id => tag, :kind => tag.kind
+          when String then conds[:name] = tag
+          else             conds[:id]   = tag
+          end
+          conds[:kind] ||= kind unless kind.blank?
+          conds
         end
       end
     end
