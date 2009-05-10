@@ -48,7 +48,8 @@ module IsTaggable
         after_save :save_tags
 
         named_scope :with_tag,  lambda{|tag, *kind| kind = kind.first
-          { :joins => :tags, :conditions => {:tags => TaggableMethods.conditions_from_tag_and_kind(tag, kind)} } }
+          { :joins      =>  :tags,
+            :conditions => {:tags => TaggableMethods.conditions_from_tag_and_kind(tag, kind)} } }
 
         tag_kinds.each do |k|
           define_method("#{k}_list")  { get_tag_list(k) }
