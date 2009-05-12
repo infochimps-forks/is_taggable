@@ -29,12 +29,18 @@ module IsTaggable
   end
 
   module TaggableMethods
+    #
+    # Helper function for assembling a named_scope on taggables:
+    # * given an integer, find tagged by that tag's ID
+    # * given a string, look up by name (you're on your own for the kind)
+    # * given a tag, look up by tag.name and kind.
+    #
     def self.conditions_from_tag_and_kind tag, kind=nil
       conds = {}
       case tag
       when Tag    then conds.merge! :id => tag, :kind => tag.kind
       when String then conds[:name] = tag
-      else             conds[:id]   = tag
+      else             conds[:id]   = tag.to_i
       end
       conds[:kind] ||= kind unless kind.blank?
       conds
@@ -60,6 +66,8 @@ module IsTaggable
 
     module InstanceMethods
       def set_tag_list(kind, list)
+        taggings_will_change! rescue nil
+        tags_will_change!     rescue nil
         tag_list = TagList.new(list)
         instance_variable_set(tag_list_name_for_kind(kind), tag_list)
       end
@@ -79,11 +87,11 @@ module IsTaggable
         end
 
         def save_tags
+          return true if (! taggings.changed?)
           tag_kinds.each do |tag_kind|
             delete_unused_tags(tag_kind)
             add_new_tags(tag_kind)
           end
-
           taggings.each(&:save)
         end
 
