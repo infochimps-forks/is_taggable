@@ -87,7 +87,7 @@ module IsTaggable
         end
 
         def save_tags
-          return true if (! taggings.changed?)
+          return true if taggings && (! taggings.changed?)
           tag_kinds.each do |tag_kind|
             delete_unused_tags(tag_kind)
             add_new_tags(tag_kind)
