@@ -66,8 +66,8 @@ module IsTaggable
 
     module InstanceMethods
       def set_tag_list(kind, list)
-        # taggings_will_change!
-        # tags_will_change!
+        # taggings_will_change! if respond_to?(:taggings_will_change!)
+        # tags_will_change!     if respond_to?(:tags_will_change!)
         tag_list = TagList.new(list)
         instance_variable_set(tag_list_name_for_kind(kind), tag_list)
       end
@@ -87,7 +87,7 @@ module IsTaggable
         end
 
         def save_tags
-          # return true if taggings && (! taggings.changed?)
+          # return true if taggings && (taggings.respond_to? :changed?) && (! taggings.changed?)
           tag_kinds.each do |tag_kind|
             delete_unused_tags(tag_kind)
             add_new_tags(tag_kind)
