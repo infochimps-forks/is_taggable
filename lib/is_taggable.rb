@@ -66,6 +66,10 @@ module IsTaggable
         include IsTaggable::TaggableMethods::InstanceMethods
         has_many   :taggings, :as      => :taggable, :dependent => :destroy
         has_many   :tags,     :through => :taggings
+        
+        # directly destroying a Tagging (as opposed to removing tags from a Taggable and saving the Taggable)
+        # enables before_destroy and after_destroy callbacks on the Tagging model.
+        before_save :destroy_deleted_taggings 
         after_save :save_tags
 
         named_scope :with_tag,  lambda{|tag, *kind| kind = kind.first
@@ -108,6 +112,10 @@ module IsTaggable
           add_new_tags(tag_kind)
         end
         taggings.each(&:save)
+      end 
+      
+      def destroy_deleted_taggings  
+        taggings.each { |t| t.destroy if !tag_list.include?(t.tag.name) }
       end
 
       def delete_unused_tags(tag_kind)
