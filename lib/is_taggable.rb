@@ -115,7 +115,7 @@ module IsTaggable
       end 
       
       def destroy_deleted_taggings  
-        taggings.each { |t| t.destroy if !tag_list.include?(t.tag.name) }
+        taggings.each { |t| t.destroy if !get_tag_list.include?(t.tag.name) }
       end
 
       def delete_unused_tags(tag_kind)
