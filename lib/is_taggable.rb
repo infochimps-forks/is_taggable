@@ -115,7 +115,7 @@ module IsTaggable
       end 
       
       def destroy_deleted_taggings 
-        tag_names = tag_kinds.each { |k| get_tag_list(k) }.map(&:name) 
+        tag_names = tag_kinds.map { |k| get_tag_list(k) }.flatten
         taggings.each { |t| t.destroy if !tag_names.include?(t.tag.name) }
       end
 
