@@ -11,9 +11,10 @@ module IsTaggable
     @@join_delimiter  = ","
 
     def split_and_sanitize str
-      str.
+      str.                       
+        downcase.
         gsub(/[,\s]+/, ' ').
-        gsub(/[^\w,\s\:\-]+/, '').
+        gsub(/[^\w\s\:\-]+/, '').
         split(@@split_delimiter).
         collect(&:strip).
         reject(&:blank?).
