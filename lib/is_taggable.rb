@@ -73,7 +73,7 @@ module IsTaggable
         
         after_save :save_tags
 
-        named_scope :with_tag,  lambda{|tag, *kind| kind = kind.first
+        scope :with_tag,  lambda{|tag, *kind| kind = kind.first
           { :joins      =>  :tags,
             :conditions => {:tags => TaggableMethods.conditions_from_tag_and_kind(tag, kind)} } }
 
