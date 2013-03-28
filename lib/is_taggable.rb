@@ -3,15 +3,15 @@
 # require_dependency File.expand_path(File.dirname(__FILE__))+'/tag'
 require 'tagging'
 
-module IsTaggable         
-    
+module IsTaggable
+
   class TagList < Array
     cattr_accessor :join_delimiter, :split_delimiter
     @@split_delimiter = /[, ]+/
     @@join_delimiter  = ","
 
     def split_and_sanitize str
-      str.                       
+      str.
         downcase.
         gsub(/[,\s]+/, ' ').
         gsub(/[^\w\s\:\-]+/, '').
@@ -33,12 +33,12 @@ module IsTaggable
     end
   end
 
-  module ActiveRecordExtension    
-    
+  module ActiveRecordExtension
+
     def is_taggable(*kinds)
       has_many :taggings,  :dependent => :destroy
       has_many :tags,      :through   => :taggings
-      class_inheritable_accessor :tag_kinds
+      class_attribute :tag_kinds
       self.tag_kinds = kinds.map(&:to_s).map(&:singularize)
       self.tag_kinds << :tag if kinds.empty?
 
@@ -46,8 +46,8 @@ module IsTaggable
     end
   end
 
-  module TaggableMethods     
-       
+  module TaggableMethods
+
     #
     # Helper function for assembling a named_scope on taggables:
     # * given an integer, find tagged by that tag's ID
@@ -70,7 +70,7 @@ module IsTaggable
         include IsTaggable::TaggableMethods::InstanceMethods
         has_many   :taggings, :as      => :taggable, :dependent => :destroy
         has_many   :tags,     :through => :taggings, :after_remove => :decrement_tag_taggings_count, :after_add => :increment_tag_taggings_count
-        
+
         after_save :save_tags
 
         scope :with_tag,  lambda{|tag, *kind| kind = kind.first
@@ -92,7 +92,7 @@ module IsTaggable
         instance_variable_set(tag_list_name_for_kind(kind), tag_list)
       end
 
-      def get_tag_list(kind)  
+      def get_tag_list(kind)
         set_tag_list(kind, tags.of_kind(kind).by_alpha.map(&:name)) if tag_list_instance_variable(kind).nil?
         tag_list_instance_variable(kind)
       end
@@ -115,7 +115,7 @@ module IsTaggable
         taggings.each(&:save)
       end
 
-      def delete_unused_tags(tag_kind)         
+      def delete_unused_tags(tag_kind)
         tags.of_kind(tag_kind).each { |t| tags.delete(t) unless get_tag_list(tag_kind).include?(t.name) }
       end
 
@@ -125,15 +125,15 @@ module IsTaggable
           tags << Tag.find_or_initialize_with_name_like_and_kind(tag_name, tag_kind) unless tag_names.include?(tag_name)
         end
       end
-      
+
       def decrement_tag_taggings_count(tag)
         tag.decrement_taggings_count!(self.class.name.underscore) if tag.methods.include?("decrement_taggings_count!")
       end
 
-      def increment_tag_taggings_count(tag)     
+      def increment_tag_taggings_count(tag)
         tag.increment_taggings_count!(self.class.name.underscore) if tag.methods.include?("increment_taggings_count!")
       end
-      
+
     end
   end
 end
